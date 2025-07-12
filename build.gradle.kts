@@ -11,7 +11,7 @@ plugins {
     id("info.solidsoft.pitest") version "1.15.0"
 }
 
-group = "com.jicay"
+group = "com.ajessondaniel"
 version = "0.0.1-SNAPSHOT"
 
 java {
@@ -43,10 +43,41 @@ testing {
                 runtimeClasspath += sourceSets.main.get().output
             }
         }
+
+        val testArchitecture by registering(JvmTestSuite::class) {
+            sources {
+                kotlin {
+                    setSrcDirs(listOf("src/testArchitecture/kotlin"))
+                }
+                compileClasspath += sourceSets.main.get().output
+                runtimeClasspath += sourceSets.main.get().output
+            }
+        }
+
+        val testComponent by registering(JvmTestSuite::class) {
+            sources {
+                kotlin {
+                    setSrcDirs(listOf("src/testComponent/kotlin"))
+                }
+                resources {
+                    setSrcDirs(listOf("src/testComponent/resources"))
+                }
+                compileClasspath += sourceSets.main.get().output
+                runtimeClasspath += sourceSets.main.get().output
+            }
+        }
     }
 }
 
 val testIntegrationImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations.implementation.get())
+}
+
+val testArchitectureImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations.implementation.get())
+}
+
+val testComponentImplementation: Configuration by configurations.getting {
     extendsFrom(configurations.implementation.get())
 }
 
@@ -64,6 +95,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testImplementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0")
     testImplementation("io.kotest.extensions:kotest-extensions-pitest:1.2.0")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.2.1")
 
     testIntegrationImplementation("io.mockk:mockk:1.13.8")
     testIntegrationImplementation("io.kotest:kotest-assertions-core:5.9.1")
@@ -79,6 +111,28 @@ dependencies {
     testIntegrationImplementation("io.kotest.extensions:kotest-extensions-spring:1.3.0")
     testIntegrationImplementation("io.kotest.extensions:kotest-extensions-testcontainers:2.0.2")
     testIntegrationImplementation("io.kotest.extensions:kotest-extensions-pitest:1.2.0")
+
+    // Architecture tests dependencies
+    testArchitectureImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testArchitectureImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+    testArchitectureImplementation("com.tngtech.archunit:archunit-junit5:1.2.1")
+
+    // Component tests dependencies
+    testComponentImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testComponentImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+    testComponentImplementation("io.cucumber:cucumber-java:7.18.0")
+    testComponentImplementation("io.cucumber:cucumber-junit-platform-engine:7.18.0")
+    testComponentImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(module = "mockito-core")
+    }
+    testComponentImplementation("org.testcontainers:postgresql:1.19.1")
+    testComponentImplementation("org.testcontainers:testcontainers:1.19.1")
+    testComponentImplementation("io.kotest.extensions:kotest-extensions-spring:1.3.0")
+    testComponentImplementation("io.kotest.extensions:kotest-extensions-testcontainers:2.0.2")
+    testComponentImplementation("io.rest-assured:rest-assured:5.3.1")
+    testComponentImplementation("io.rest-assured:json-path:5.3.1")
+    testComponentImplementation("io.rest-assured:xml-path:5.3.1")
+    testComponentImplementation("io.cucumber:cucumber-spring:7.18.0")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.21")
 }
@@ -105,11 +159,11 @@ tasks.register<JacocoReport>("jacocoFullReport") {
 }
 
 configure<PitestPluginExtension> {
-    targetClasses.set(listOf("com.jicay.bookmanagement.*"))
+    targetClasses.set(listOf("com.ajessondaniel.bookmanagement.*"))
 }
 
 pitest {
-    targetClasses.add("com.jicay.bookmanagement.*")
+    targetClasses.add("com.ajessondaniel.bookmanagement.*")
     junit5PluginVersion = "1.0.0"
     avoidCallsTo.set(setOf("kotlin.jvm.internal"))
     mutators.set(setOf("STRONGER"))
